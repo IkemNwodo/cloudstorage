@@ -5,6 +5,8 @@ import com.udacity.jwdnd.course1.cloudstorage.model.FileForm;
 import com.udacity.jwdnd.course1.cloudstorage.model.NoteForm;
 import com.udacity.jwdnd.course1.cloudstorage.model.User;
 import com.udacity.jwdnd.course1.cloudstorage.services.*;
+import org.mybatis.logging.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -13,12 +15,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.logging.Logger;
 
 @Controller
 @RequestMapping("/home")
 public class HomeController {
 
     private final FileService fileService;
+    @Autowired
     private final UserService userService;
     private final NoteService noteService;
     private final CredentialService credentialService;
@@ -64,6 +68,14 @@ public class HomeController {
         String[] fileListings = fileService.getFileListings(userId);
         MultipartFile multipartFile = newFile.getFile();
         String fileName = multipartFile.getOriginalFilename();
+
+
+        if (newFile.getFile().isEmpty()){
+            model.addAttribute("result","error");
+            model.addAttribute("message", "You have tried to upload an empty file");
+            return "result";
+        }
+
         boolean fileIsDuplicate = false;
         for (String fileListing: fileListings) {
             if (fileListing.equals(fileName)) {
